@@ -1,0 +1,12 @@
+backend/.venv/
+__pycache__/
+*.pyc
+.env
+*.duckdb
+*.duckdb.wal
+reports/*.pdf
+frontend/node_modules/
+frontend/dist/
+data/raw/*.csv
+!data/raw/.gitkeep
+

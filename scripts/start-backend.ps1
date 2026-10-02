@@ -1,0 +1,2 @@
+Set-Location "$PSScriptRoot\.."
+& ".\backend\.venv\Scripts\python.exe" -m uvicorn backend.main:app --reload --port 8000
