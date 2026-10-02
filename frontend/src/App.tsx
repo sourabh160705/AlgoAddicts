@@ -421,7 +421,7 @@ export default function App() {
                 {stats.loaded ? 'INDEXED' : 'MISSING'}
               </strong>
             </div>
-            <div className="system-meta">Zero external API calls. All processing runs 100% on-device.</div>
+
           </div>
         </div>
       </aside>
