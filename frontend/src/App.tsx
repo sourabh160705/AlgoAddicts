@@ -5,6 +5,7 @@ import {
   ArrowRight,
   BarChart3,
   Bell,
+  Calculator,
   CheckCircle2,
   Clock3,
   Copy,
@@ -1225,8 +1226,8 @@ function NodeInspector({
     <div className="node-inspector">
       <div className="node-score">
         <div>
-          <span className="overline">MULE RISK INDEX</span>
-          <strong>{node.risk_score}</strong>
+          <span className="overline">EXPLAINABLE RISK INDEX</span>
+          <strong>{node.risk_score} <span className="score-total">/ 100</span></strong>
           <small>{riskLabel(node.risk_score)} threat level</small>
         </div>
         <div
@@ -1240,6 +1241,17 @@ function NodeInspector({
               : 'low'
           }`}
         />
+      </div>
+
+      {/* Additive Scoring Mathematical Equation */}
+      <div className="formula-card">
+        <div className="formula-header">
+          <Calculator size={13} />
+          <span>MATHEMATICAL POINT SUMMATION</span>
+        </div>
+        <div className="formula-equation">
+          {node.formula || `${node.risk_score} / 100`}
+        </div>
       </div>
 
       <div className="inspector-grid">
@@ -1262,21 +1274,26 @@ function NodeInspector({
         )}
       </div>
 
-      <div className="signal-box">
-        <span className="overline">HEURISTIC RISK SIGNALS</span>
-        {node.signals.length ? (
-          node.signals.map((s) => (
-            <div className="signal" key={s.name}>
-              <CheckCircle2 size={14} />
-              <div>
-                <strong>{s.name.replaceAll('_', ' ')}</strong>
-                <span>{typeof s.detail === 'string' ? s.detail : JSON.stringify(s.detail)}</span>
+      {/* Explainable Additive Rule Contributions */}
+      <div className="breakdown-box">
+        <span className="overline">FACTOR CONTRIBUTIONS (0–100 BREAKDOWN)</span>
+        <div className="breakdown-list">
+          {node.breakdown && node.breakdown.length > 0 ? (
+            node.breakdown.map((item) => (
+              <div key={item.factor} className={`breakdown-item ${item.hit ? 'hit' : 'miss'}`}>
+                <div className="breakdown-item-head">
+                  <span className="factor-name">{item.factor}</span>
+                  <span className={`factor-points ${item.hit ? 'pts-hit' : 'pts-miss'}`}>
+                    {item.hit ? `+${item.points}` : '+0'} / {item.max_points} pts
+                  </span>
+                </div>
+                <div className="factor-detail">{item.detail}</div>
               </div>
-            </div>
-          ))
-        ) : (
-          <div className="no-signal">No suspicious signals recorded above threshold.</div>
-        )}
+            ))
+          ) : (
+            <div className="no-signal">Originating victim account — baseline 0 risk points.</div>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -128,6 +128,8 @@ def trace_money_flow(victim_account: str, max_hops: int = 4) -> dict[str, Any]:
         node_data.update({
             "risk_score": r.get("risk_score", 0),
             "layer": layer_val,
+            "breakdown": r.get("breakdown", []),
+            "formula": r.get("formula", ""),
             "signals": r.get("signals", []),
             "stats": r.get("stats", {})
         })

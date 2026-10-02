@@ -2122,3 +2122,115 @@ button {
 .inspector-actions .primary-button, .inspector-actions .ghost-button {
   flex: 1;
 }
+
+/* Explainable Risk Scoring Additive Breakdown */
+.score-total {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.formula-card {
+  margin-top: 10px;
+  background: linear-gradient(135deg, rgba(9, 23, 36, 0.9), rgba(6, 15, 25, 0.9));
+  border: 1px solid rgba(0, 245, 255, 0.25);
+  border-radius: 11px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.formula-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+  color: var(--cyan);
+}
+
+.formula-equation {
+  margin-top: 6px;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #e2e8f0;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6px 9px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.breakdown-box {
+  margin-top: 12px;
+  border: 1px solid #1a273a;
+  border-radius: 12px;
+  padding: 12px;
+  background: #070c14;
+}
+
+.breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.breakdown-item {
+  border: 1px solid #162234;
+  border-radius: 9px;
+  padding: 8px 10px;
+  background: #09111b;
+  transition: all 0.15s ease;
+}
+
+.breakdown-item.hit {
+  border-color: rgba(0, 245, 255, 0.25);
+  background: rgba(0, 245, 255, 0.04);
+}
+
+.breakdown-item.miss {
+  opacity: 0.55;
+  border-color: #152030;
+}
+
+.breakdown-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.factor-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: #dbeafe;
+}
+
+.factor-points {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.pts-hit {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.pts-miss {
+  background: rgba(100, 116, 139, 0.12);
+  color: #64748b;
+  border: 1px solid rgba(100, 116, 139, 0.25);
+}
+
+.factor-detail {
+  font-size: 9px;
+  color: #8899af;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+

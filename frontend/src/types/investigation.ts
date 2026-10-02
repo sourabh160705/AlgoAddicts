@@ -1,9 +1,19 @@
+export interface RiskBreakdownItem {
+  factor: string
+  points: number
+  max_points: number
+  hit: boolean
+  detail: string
+}
+
 export interface GraphNode {
   id: string
   account: string
   hop: number
   layer: number
   risk_score: number
+  formula?: string
+  breakdown?: RiskBreakdownItem[]
   signals: Array<{ name: string; detail: unknown }>
   stats?: {
     total_inflow?: number
@@ -34,6 +44,8 @@ export interface Evidence {
     hop: number
     layer: number
     risk_score: number
+    formula?: string
+    breakdown?: RiskBreakdownItem[]
     signals: Array<{ name: string; detail: unknown }>
   }>
   transactions: GraphEdge[]
@@ -75,6 +87,8 @@ export interface MuleAccount {
   account: string
   risk_score: number
   layer: number
+  formula?: string
+  breakdown?: RiskBreakdownItem[]
   signals: Array<{ name: string; detail: unknown }>
   stats?: AccountSummary
 }
