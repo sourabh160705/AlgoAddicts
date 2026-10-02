@@ -380,10 +380,6 @@ export default function App() {
           </div>
         </div>
 
-        <div className="mode-pill">
-          <span className="pulse-dot" />
-          <span>LOCAL ENGINE • AIR-GAPPED</span>
-        </div>
 
         <div className="side-section-label">OPERATIONAL SUITE</div>
         <nav className="side-nav">
