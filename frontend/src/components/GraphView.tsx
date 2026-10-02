@@ -14,11 +14,11 @@ import {
 import type { GraphEdge, GraphNode } from '../types/investigation'
 
 function nodeColor(layer: number, risk: number, hop: number) {
-  if (hop === 0) return '#00f5ff' // Cyan for victim
-  if (layer === 3 || risk >= 75) return '#ff3b5c' // Critical Neon Red
-  if (layer === 2 || risk >= 50) return '#ffaa00' // Amber Orange
-  if (layer === 1 || risk >= 25) return '#8b9cff' // Electric Purple-Blue
-  return '#64748b' // Slate
+  if (hop === 0) return '#0284c7' // Sky Blue for victim
+  if (layer === 3 || risk >= 75) return '#dc2626' // Red for terminal/critical
+  if (layer === 2 || risk >= 50) return '#d97706' // Amber for Layer 2
+  if (layer === 1 || risk >= 25) return '#7c3aed' // Purple for Layer 1
+  return '#059669' // Emerald
 }
 
 export type LayoutType = 'cose' | 'breadthfirst' | 'concentric' | 'circle'
@@ -61,14 +61,14 @@ export default function GraphView({
             width: 44,
             height: 44,
             label: 'data(label)',
-            color: '#e2e8f0',
-            'font-size': '8px',
+            color: '#0f172a',
+            'font-size': '9px',
             'font-weight': 700,
             'text-wrap': 'wrap',
             'text-valign': 'bottom',
             'text-margin-y': 5,
-            'border-width': 2,
-            'border-color': '#090d16',
+            'border-width': 2.5,
+            'border-color': '#ffffff',
             'overlay-opacity': 0,
             'transition-property': 'background-color, border-width, border-color, opacity',
             'transition-duration': 200,
@@ -78,45 +78,46 @@ export default function GraphView({
           selector: 'node:selected',
           style: {
             'border-width': 4,
-            'border-color': '#00f5ff',
+            'border-color': '#059669',
             'border-opacity': 1,
-            'underlay-color': '#00f5ff',
-            'underlay-padding': 4,
-            'underlay-opacity': 0.35,
+            'underlay-color': '#10b981',
+            'underlay-padding': 5,
+            'underlay-opacity': 0.3,
           },
         },
         {
           selector: 'node.highlighted',
           style: {
             'border-width': 4,
-            'border-color': '#38bdf8',
+            'border-color': '#059669',
             'border-opacity': 1,
-            'underlay-color': '#38bdf8',
-            'underlay-padding': 4,
-            'underlay-opacity': 0.45,
+            'underlay-color': '#10b981',
+            'underlay-padding': 5,
+            'underlay-opacity': 0.35,
           },
         },
         {
           selector: 'node.dimmed',
           style: {
-            opacity: 0.18,
+            opacity: 0.22,
           },
         },
         {
           selector: 'edge',
           style: {
             width: 2,
-            'line-color': '#334155',
-            'target-arrow-color': '#475569',
+            'line-color': '#94a3b8',
+            'target-arrow-color': '#64748b',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
-            'arrow-scale': 0.8,
+            'arrow-scale': 0.85,
             label: 'data(label)',
-            color: '#94a3b8',
-            'font-size': '7px',
-            'text-background-color': '#070b14',
-            'text-background-opacity': 0.92,
-            'text-background-padding': '2px',
+            color: '#334155',
+            'font-size': '8px',
+            'font-weight': 700,
+            'text-background-color': '#ffffff',
+            'text-background-opacity': 0.95,
+            'text-background-padding': '3px',
             'transition-property': 'line-color, target-arrow-color, width, opacity',
             'transition-duration': 200,
           },
@@ -125,9 +126,9 @@ export default function GraphView({
           selector: 'edge.highlighted',
           style: {
             width: 3.5,
-            'line-color': '#00f5ff',
-            'target-arrow-color': '#00f5ff',
-            color: '#00f5ff',
+            'line-color': '#059669',
+            'target-arrow-color': '#059669',
+            color: '#065f46',
             'z-index': 99,
           },
         },
