@@ -47,6 +47,8 @@ def ingest_csv(csv_path: str | Path, db_path: str | Path) -> dict:
         con.execute("CREATE INDEX idx_receiver ON transactions(receiver_account)")
         con.execute("CREATE INDEX idx_timestamp ON transactions(timestamp)")
         con.execute("CREATE INDEX idx_txn_id ON transactions(transaction_id)")
+        con.execute("CREATE INDEX idx_sender_ts ON transactions(sender_account, timestamp)")
+        con.execute("CREATE INDEX idx_receiver_ts ON transactions(receiver_account, timestamp)")
         con.execute("""
             CREATE TABLE account_summary AS
             WITH inflow AS (
@@ -65,6 +67,7 @@ def ingest_csv(csv_path: str | Path, db_path: str | Path) -> dict:
                    COALESCE(o.unique_receivers,0) AS unique_receivers
             FROM inflow i FULL OUTER JOIN outflow o USING(account)
         """)
+        con.execute("CREATE INDEX idx_summary_acc ON account_summary(account)")
         count = con.execute("SELECT COUNT(*) FROM transactions").fetchone()[0]
         min_ts, max_ts = con.execute("SELECT MIN(timestamp), MAX(timestamp) FROM transactions").fetchone()
         con.execute("""CREATE TABLE dataset_metadata AS SELECT ? AS source_file, ?::BIGINT AS row_count, ?::TIMESTAMP AS min_timestamp, ?::TIMESTAMP AS max_timestamp, NOW() AS ingested_at""", [str(csv_path), count, min_ts, max_ts])

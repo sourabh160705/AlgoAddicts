@@ -1,9 +1,18 @@
 import axios from 'axios'
 import type { AccountSummary, Investigation, MuleAccount, Stats } from '../types/investigation'
 
+// Smart API URL resolution for Vercel / Render deployment & local dev
+const rawBase = import.meta.env.VITE_API_BASE_URL || ''
+let resolvedBase = '/api'
+
+if (rawBase) {
+  const clean = rawBase.replace(/\/+$/, '')
+  resolvedBase = clean.endsWith('/api') ? clean : `${clean}/api`
+}
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
-  timeout: 30000,
+  baseURL: resolvedBase,
+  timeout: 45000,
 })
 
 export async function getStats(): Promise<Stats> {
@@ -44,4 +53,21 @@ export async function getInvestigation(id: string): Promise<Investigation> {
 
 export async function createReport(id: string, kind: 'case-diary' | 'freeze-requisition') {
   return (await api.post(`/investigation/${id}/${kind}`)).data
+}
+
+export async function downloadReportPdf(id: string, kind: 'case-diary' | 'freeze-requisition') {
+  const response = await api.get(`/investigation/${id}/download/${kind}`, {
+    responseType: 'blob',
+  })
+  const filename = kind === 'case-diary' ? `Case_Diary_${id}.pdf` : `Freeze_Requisition_Sec91_${id}.pdf`
+  const blob = new Blob([response.data], { type: 'application/pdf' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  window.URL.revokeObjectURL(url)
+  a.remove()
+  return filename
 }

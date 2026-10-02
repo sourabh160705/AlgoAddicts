@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: abhedya-backend
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: ABHEDYA_DB_PATH
+        value: data/processed/abhedya.duckdb
+      - key: MAX_GRAPH_NODES
+        value: "600"
+      - key: MAX_GRAPH_EDGES
+        value: "1800"

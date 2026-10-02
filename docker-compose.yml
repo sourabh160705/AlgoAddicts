@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  algoaddicts:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: abhedya_chakra_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data/processed:/app/data/processed
+      - ./reports:/app/reports
+    restart: unless-stopped

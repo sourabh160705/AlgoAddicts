@@ -1,12 +1,14 @@
 from __future__ import annotations
 import time, uuid
+from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from backend.database.queries import database_stats, account_summary, account_transactions, timeline, search_accounts, top_account_candidates
 from backend.graph.trace import trace_money_flow
 from backend.evidence.builder import build_evidence
 from backend.reports.pdf_reports import make_case_diary, make_freeze_requisition
-from backend.analytics.risk import analyze_account
+from backend.analytics.risk import analyze_account, analyze_accounts_batch
 
 router = APIRouter(prefix="/api")
 INVESTIGATIONS: dict[str, dict] = {}
@@ -51,7 +53,9 @@ def account_risk(account: str):
 @router.get("/mules/top")
 def top_mules(limit: int = Query(20, ge=1, le=100)):
     candidates = top_account_candidates(min(max(limit * 4, 20), 250))
-    ranked = [analyze_account(c["account"]) for c in candidates]
+    candidate_accs = [c["account"] for c in candidates]
+    analyzed_map = analyze_accounts_batch(candidate_accs)
+    ranked = list(analyzed_map.values())
     ranked.sort(key=lambda x: (x.get("risk_score", 0), x.get("stats", {}).get("total_inflow", 0)), reverse=True)
     return ranked[:limit]
 
@@ -80,13 +84,35 @@ def investigation_evidence(investigation_id: str):
         raise HTTPException(404, "Investigation not found")
     return r["evidence"]
 
+@router.get("/investigation/{investigation_id}/download/{kind}")
+def download_report(investigation_id: str, kind: str):
+    r = INVESTIGATIONS.get(investigation_id)
+    if not r:
+        raise HTTPException(404, "Investigation not found")
+    
+    if kind in ("case-diary", "case_diary"):
+        p = make_case_diary(r["evidence"], investigation_id)
+        filename = f"Case_Diary_{investigation_id}.pdf"
+    elif kind in ("freeze-requisition", "freeze_requisition"):
+        p = make_freeze_requisition(r["evidence"], investigation_id)
+        filename = f"Freeze_Requisition_Sec91_{investigation_id}.pdf"
+    else:
+        raise HTTPException(400, "Invalid report kind. Must be case-diary or freeze-requisition.")
+
+    return FileResponse(
+        path=str(p),
+        media_type="application/pdf",
+        filename=filename,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
 @router.post("/investigation/{investigation_id}/case-diary")
 def case_diary(investigation_id: str):
     r = INVESTIGATIONS.get(investigation_id)
     if not r:
         raise HTTPException(404, "Investigation not found")
     p = make_case_diary(r["evidence"], investigation_id)
-    return {"filename": p.name, "path": str(p)}
+    return {"filename": p.name, "path": str(p), "download_url": f"/api/investigation/{investigation_id}/download/case-diary"}
 
 @router.post("/investigation/{investigation_id}/freeze-requisition")
 def freeze_requisition(investigation_id: str):
@@ -94,4 +120,4 @@ def freeze_requisition(investigation_id: str):
     if not r:
         raise HTTPException(404, "Investigation not found")
     p = make_freeze_requisition(r["evidence"], investigation_id)
-    return {"filename": p.name, "path": str(p)}
+    return {"filename": p.name, "path": str(p), "download_url": f"/api/investigation/{investigation_id}/download/freeze-requisition"}
