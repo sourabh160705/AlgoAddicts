@@ -5,43 +5,31 @@ import {
   ArrowRight,
   BarChart3,
   Bell,
-  Briefcase,
   Calculator,
-  Calendar,
   CheckCircle2,
-  ChevronDown,
-  Clock,
   Clock3,
   Copy,
-  Cpu,
   Database,
   Download,
+  ExternalLink,
   Eye,
   FileCheck2,
   FileText,
+  Filter,
   Fingerprint,
-  FolderLock,
-  Globe,
-  HelpCircle,
-  History,
+  Gauge,
+  Layers,
   LayoutDashboard,
-  Link as LinkIcon,
   Menu,
-  Moon,
   Network,
   Play,
-  PlusCircle,
   Search,
   Server,
-  Settings,
   Shield,
   ShieldAlert,
-  ShieldCheck,
   SlidersHorizontal,
   Sparkles,
   Target,
-  User,
-  Users,
   X,
   Zap,
 } from 'lucide-react'
@@ -60,31 +48,15 @@ import {
 import type { AccountSummary, GraphEdge, GraphNode, Investigation, MuleAccount, Stats } from './types/investigation'
 import './styles.css'
 
-type Page =
-  | 'dashboard'
-  | 'incidents'
-  | 'investigation'
-  | 'mules'
-  | 'analytics'
-  | 'timeline'
-  | 'osint'
-  | 'evidence'
-  | 'users'
-  | 'settings'
-
+type Page = 'dashboard' | 'investigation' | 'mules' | 'timeline' | 'evidence'
 type FilterMode = 'all' | 'critical' | 'high' | 'l1' | 'l2' | 'l3'
 
 const nav = [
-  { id: 'dashboard' as Page, label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'incidents' as Page, label: 'Incidents', icon: ShieldAlert },
-  { id: 'investigation' as Page, label: 'Case Management', icon: FolderLock },
-  { id: 'mules' as Page, label: 'AI Detection', icon: Cpu },
-  { id: 'analytics' as Page, label: 'Analytics', icon: BarChart3 },
-  { id: 'investigation' as Page, label: 'Knowledge Graph', icon: Network },
-  { id: 'osint' as Page, label: 'OSINT & Intelligence', icon: Globe },
-  { id: 'evidence' as Page, label: 'Reports', icon: FileText },
-  { id: 'users' as Page, label: 'Users & Roles', icon: Users },
-  { id: 'settings' as Page, label: 'Settings', icon: Settings },
+  { id: 'dashboard' as Page, label: 'Command Center', icon: LayoutDashboard },
+  { id: 'investigation' as Page, label: 'Investigation', icon: Network },
+  { id: 'mules' as Page, label: 'Mule Intelligence', icon: ShieldAlert },
+  { id: 'timeline' as Page, label: 'Temporal Analysis', icon: Clock3 },
+  { id: 'evidence' as Page, label: 'Evidence & Reports', icon: FileCheck2 },
 ]
 
 function money(value: number | string | undefined) {
@@ -123,8 +95,6 @@ export default function App() {
   const [toast, setToast] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showFreezeModal, setShowFreezeModal] = useState(false)
-  const [currentTime, setCurrentTime] = useState('04:22 PM')
-  const [currentDate, setCurrentDate] = useState('Thu, 02 Oct 2026')
 
   useEffect(() => {
     Promise.all([getStats(), getHealth()])
@@ -134,13 +104,6 @@ export default function App() {
       })
       .catch(() => setHealth({ status: 'offline' }))
     getTopMules(12).then(setMules).catch(() => setMules([]))
-
-    const timer = setInterval(() => {
-      const now = new Date()
-      setCurrentTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }))
-      setCurrentDate(now.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }))
-    }, 1000)
-    return () => clearInterval(timer)
   }, [])
 
   useEffect(() => {
@@ -198,10 +161,12 @@ export default function App() {
     if (!inv) return []
     let list = inv.nodes
 
+    // Apply isolation if active
     if (isolationId && isolatedIds) {
       list = list.filter((n) => isolatedIds.has(n.id))
     }
 
+    // Apply layer / risk filter pills
     if (filterMode === 'critical') {
       list = list.filter((n) => n.hop === 0 || n.risk_score >= 75)
     } else if (filterMode === 'high') {
@@ -225,6 +190,7 @@ export default function App() {
     )
   }, [timelineEdges, visibleIds])
 
+  const highestRisk = useMemo(() => Math.max(0, ...(inv?.nodes || []).map((n) => n.risk_score)), [inv])
   const suspiciousEdges = useMemo(() => inv?.edges.filter((e) => Number(e.amount) > 0) || [], [inv])
   const totalTraced = useMemo(
     () => suspiciousEdges.reduce((sum, e) => sum + Number(e.amount || 0), 0),
@@ -344,33 +310,36 @@ export default function App() {
   return (
     <div className="app-shell">
       {sidebarOpen && <button className="mobile-scrim" onClick={() => setSidebarOpen(false)} aria-label="Close menu" />}
-
-      {/* 1. LEFT SIDEBAR */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="brand-lockup">
           <div className="brand-mark">
-            <Shield size={22} />
+            <Shield size={20} />
           </div>
           <div>
-            <div className="brand-name">Abhedya-Chakra</div>
-            <div className="brand-subtitle">Protect • Detect • Respond</div>
+            <div className="brand-name">ABHEDYA-CHAKRA</div>
+            <div className="brand-subtitle">AI & Graph Cyber Forensics</div>
           </div>
         </div>
 
+        <div className="mode-pill">
+          <span className="pulse-dot" />
+          <span>LOCAL ENGINE • AIR-GAPPED</span>
+        </div>
+
+        <div className="side-section-label">OPERATIONAL SUITE</div>
         <nav className="side-nav">
-          {nav.map((item, idx) => {
+          {nav.map((item) => {
             const Icon = item.icon
-            const isActive = page === item.id && (idx === 0 || item.label === 'Dashboard' || item.id === page)
             return (
               <button
-                key={`${item.id}-${idx}`}
+                key={item.id}
                 className={`side-nav-item ${page === item.id ? 'active' : ''}`}
                 onClick={() => {
                   setPage(item.id)
                   setSidebarOpen(false)
                 }}
               >
-                <Icon size={18} />
+                <Icon size={17} />
                 <span>{item.label}</span>
                 {item.id === 'investigation' && inv && <b>{inv.node_count}</b>}
               </button>
@@ -378,90 +347,58 @@ export default function App() {
           })}
         </nav>
 
-        {/* BOTTOM PROMO CARD */}
         <div className="sidebar-footer">
-          <div className="safer-india-card">
-            <div className="safer-india-info">
-              <div className="safer-india-icon">
-                <ShieldCheck size={18} />
-              </div>
-              <div>
-                <span className="safer-india-title">Helping a Safer Digital India</span>
-                <span className="safer-india-subtitle">Detect • Prevent • Respond</span>
-              </div>
+          <div className="side-section-label">SYSTEM HEALTH</div>
+          <div className="system-card">
+            <div className="system-row">
+              <span>
+                <Server size={14} /> FastAPI BFS Core
+              </span>
+              <strong className={health?.status === 'ok' ? 'ok' : 'warn'}>
+                {health?.status === 'ok' ? 'ONLINE (0.01s)' : 'CHECK'}
+              </strong>
             </div>
-            <button className="safer-india-btn" onClick={() => setPage('dashboard')}>
-              <ArrowRight size={14} />
-            </button>
+            <div className="system-row">
+              <span>
+                <Database size={14} /> DuckDB (2M Rows)
+              </span>
+              <strong className={stats.loaded ? 'ok' : 'warn'}>
+                {stats.loaded ? 'INDEXED' : 'MISSING'}
+              </strong>
+            </div>
+            <div className="system-meta">Zero external API calls. All processing runs 100% on-device.</div>
           </div>
         </div>
       </aside>
 
-      {/* 2. MAIN CONTENT */}
       <main className="main-content">
-        {/* TOPBAR */}
         <header className="topbar">
-          <button className="icon-circle-btn mobile-menu" onClick={() => setSidebarOpen(true)}>
+          <button className="icon-button mobile-menu" onClick={() => setSidebarOpen(true)}>
             <Menu size={18} />
           </button>
-
-          <div className="topbar-search-wrap">
-            <div className="topbar-search">
-              <Search size={16} />
-              <input
-                value={traceAccount}
-                onChange={(e) => setTraceAccount(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && runTrace()}
-                placeholder="Search incidents, cases, users, modules or account IDs..."
-              />
-              {traceAccount && (
-                <button className="ghost-button compact" onClick={() => runTrace()} style={{ height: 28 }}>
-                  Search
-                </button>
-              )}
-            </div>
+          <div>
+            <span className="breadcrumb">OPERATION ABHEDYA / {page.toUpperCase()}</span>
+            <h1>
+              {page === 'dashboard'
+                ? 'Cyber Command Center'
+                : page === 'investigation'
+                ? 'Multi-Hop Graph Investigation'
+                : page === 'mules'
+                ? 'Mule Ring Intelligence'
+                : page === 'timeline'
+                ? 'Temporal Smurfing Forensics'
+                : 'Legal Evidence & PDF Notices'}
+            </h1>
           </div>
-
-          <div className="topbar-right">
-            <button className="icon-circle-btn" title="Notifications">
-              <Bell size={17} />
-              <span className="notif-badge" />
-            </button>
-
-            <button className="icon-circle-btn" title="Toggle Theme">
-              <Moon size={17} />
-            </button>
-
-            <div className="user-profile-pill">
-              <div className="user-avatar">AP</div>
-              <div className="user-details">
-                <span className="user-name">Abhishek Patel</span>
-                <span className="user-role">Administrator</span>
-              </div>
-              <ChevronDown size={14} color="#64748b" />
+          <div className="topbar-actions">
+            <div className="topbar-status">
+              <span className="pulse-dot" /> Algorithm: <strong>BFS Frontier</strong>
             </div>
+            <button className="icon-button" title="System Notifications">
+              <Bell size={17} />
+            </button>
           </div>
         </header>
-
-        {suggestions.length > 0 && (
-          <div className="suggestion-list">
-            {suggestions.map((s) => (
-              <button
-                key={s.account}
-                onClick={() => {
-                  setTraceAccount(s.account)
-                  setSuggestions([])
-                  runTrace(s.account)
-                }}
-              >
-                <span>{s.account}</span>
-                <small>
-                  {money(s.total_inflow)} in · {s.unique_senders} senders
-                </small>
-              </button>
-            ))}
-          </div>
-        )}
 
         {error && (
           <div className="alert-banner">
@@ -484,403 +421,241 @@ export default function App() {
           </div>
         )}
 
-        {/* 3. DASHBOARD PAGE */}
+        {/* 1. COMMAND CENTER DASHBOARD */}
         {page === 'dashboard' && (
-          <>
-            {/* HERO BANNER ROW */}
-            <div className="hero-banner-row">
-              <div className="hero-main-card">
-                <div className="hero-text-content">
-                  <span className="welcome-pill">Welcome Back</span>
-                  <h2>Abhedya-Chakra</h2>
-                  <h4>AI-Powered Cybercrime Detection & Investigation Platform</h4>
-                  <p>
-                    Detect, analyze, link and respond to cyber threats using AI agents, knowledge graphs and real-time intelligence across 2,000,000+ banking transactions.
-                  </p>
+          <section className="page-stack">
+            <div className="hero-grid">
+              <div className="hero-copy panel-surface">
+                <div className="hero-kicker">
+                  <Sparkles size={14} /> RAPID BENEFICIARY TRACING PLATFORM
                 </div>
+                <h2>
+                  Trace the money.
+                  <br />
+                  <span>Expose the mule network.</span>
+                </h2>
+                <p>
+                  Perform sub-second 4-hop fund tracing across 2,000,000+ banking transactions. Isolate Layer 1 collectors,
+                  Layer 2 distributors, and Layer 3 cash-out gateways using high-velocity dispersion heuristics.
+                </p>
 
-                <div className="hero-3d-graphic">
-                  <div className="shield-3d-glow">
-                    <Shield size={44} />
-                  </div>
-                  <div className="floating-node-badge n1"><Cpu size={15} /></div>
-                  <div className="floating-node-badge n2"><Globe size={15} /></div>
-                  <div className="floating-node-badge n3"><Database size={15} /></div>
-                  <div className="floating-node-badge n4"><Users size={15} /></div>
-                </div>
-              </div>
-
-              {/* HERO RIGHT STATUS CARD */}
-              <div className="hero-status-card">
-                <div className="date-time-box">
-                  <span className="date-label">
-                    <Calendar size={13} /> {currentDate}
-                  </span>
-                  <span className="clock-display">{currentTime}</span>
-                </div>
-
-                <div className="system-status-box">
-                  <div className="system-status-title">
-                    <span className="pulse-dot" /> System Online
-                  </div>
-                  <span className="system-status-sub">All modules operational</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 4 STAT METRICS ROW */}
-            <div className="metrics-four-grid">
-              <div className="stat-metric-card">
-                <div>
-                  <div className="stat-icon-square red">
-                    <AlertTriangle size={20} />
-                  </div>
-                  <div className="stat-details">
-                    <span>Total Incidents</span>
-                    <strong>248</strong>
-                    <div className="stat-trend">
-                      <ArrowRight size={11} style={{ transform: 'rotate(-45deg)' }} /> ↑ 12% from last week
-                    </div>
-                  </div>
-                </div>
-                <div className="stat-mini-bars">
-                  <div className="mini-bar" style={{ height: '40%' }} />
-                  <div className="mini-bar" style={{ height: '65%' }} />
-                  <div className="mini-bar" style={{ height: '50%' }} />
-                  <div className="mini-bar" style={{ height: '85%' }} />
-                  <div className="mini-bar" style={{ height: '100%', background: '#10b981' }} />
-                </div>
-              </div>
-
-              <div className="stat-metric-card">
-                <div>
-                  <div className="stat-icon-square green">
-                    <FolderLock size={20} />
-                  </div>
-                  <div className="stat-details">
-                    <span>Active Cases</span>
-                    <strong>63</strong>
-                    <div className="stat-trend">
-                      <ArrowRight size={11} style={{ transform: 'rotate(-45deg)' }} /> ↑ 8% from last week
-                    </div>
-                  </div>
-                </div>
-                <div className="stat-mini-bars">
-                  <div className="mini-bar" style={{ height: '30%' }} />
-                  <div className="mini-bar" style={{ height: '55%' }} />
-                  <div className="mini-bar" style={{ height: '70%' }} />
-                  <div className="mini-bar" style={{ height: '60%' }} />
-                  <div className="mini-bar" style={{ height: '90%', background: '#10b981' }} />
-                </div>
-              </div>
-
-              <div className="stat-metric-card">
-                <div>
-                  <div className="stat-icon-square green">
-                    <User size={20} />
-                  </div>
-                  <div className="stat-details">
-                    <span>Suspects Identified</span>
-                    <strong>41</strong>
-                    <div className="stat-trend">
-                      <ArrowRight size={11} style={{ transform: 'rotate(-45deg)' }} /> ↑ 22% from last week
-                    </div>
-                  </div>
-                </div>
-                <div className="stat-mini-bars">
-                  <div className="mini-bar" style={{ height: '20%' }} />
-                  <div className="mini-bar" style={{ height: '45%' }} />
-                  <div className="mini-bar" style={{ height: '60%' }} />
-                  <div className="mini-bar" style={{ height: '75%' }} />
-                  <div className="mini-bar" style={{ height: '100%', background: '#10b981' }} />
-                </div>
-              </div>
-
-              <div className="stat-metric-card">
-                <div>
-                  <div className="stat-icon-square blue">
-                    <LinkIcon size={20} />
-                  </div>
-                  <div className="stat-details">
-                    <span>Link Analysis (Nodes)</span>
-                    <strong>1,852</strong>
-                    <div className="stat-trend">
-                      <ArrowRight size={11} style={{ transform: 'rotate(-45deg)' }} /> ↑ 18% from last week
-                    </div>
-                  </div>
-                </div>
-                <div className="stat-mini-bars">
-                  <div className="mini-bar" style={{ height: '50%' }} />
-                  <div className="mini-bar" style={{ height: '60%' }} />
-                  <div className="mini-bar" style={{ height: '40%' }} />
-                  <div className="mini-bar" style={{ height: '80%' }} />
-                  <div className="mini-bar" style={{ height: '95%', background: '#10b981' }} />
-                </div>
-              </div>
-            </div>
-
-            {/* CHARTS SPLIT SECTION */}
-            <div className="charts-split-grid">
-              {/* INCIDENT TRENDS SPLINE CHART */}
-              <div className="panel-surface chart-card">
-                <div className="chart-header">
-                  <div>
-                    <h3>Incident Trends</h3>
-                    <span>Overview of reported cyber incidents in the last 30 days</span>
-                  </div>
-                  <select className="timeframe-select" defaultValue="30">
-                    <option value="30">Last 30 Days</option>
-                    <option value="15">Last 15 Days</option>
-                    <option value="7">Last 7 Days</option>
-                  </select>
-                </div>
-
-                <div className="line-chart-canvas">
-                  <svg className="line-chart-svg" viewBox="0 0 600 160">
-                    {/* Grid horizontal lines */}
-                    <line x1="0" y1="30" x2="600" y2="30" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="3 3" />
-                    <line x1="0" y1="70" x2="600" y2="70" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="3 3" />
-                    <line x1="0" y1="110" x2="600" y2="110" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="3 3" />
-                    <line x1="0" y1="150" x2="600" y2="150" stroke="#e2e8f0" strokeWidth="1" />
-
-                    {/* Gradient fill under curve */}
-                    <defs>
-                      <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
-                        <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M 20 145 C 50 120, 70 140, 100 125 C 130 110, 150 130, 180 115 C 210 100, 230 130, 260 110 C 290 90, 310 120, 340 100 C 370 80, 390 115, 420 105 C 450 95, 470 50, 500 45 C 530 40, 550 85, 580 95 L 580 150 L 20 150 Z"
-                      fill="url(#chartGrad)"
+                <div className="trace-input-row">
+                  <div className="search-field">
+                    <Search size={17} />
+                    <input
+                      value={traceAccount}
+                      onChange={(e) => setTraceAccount(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && runTrace()}
+                      placeholder="Enter victim or suspect account ID (e.g. PYTM10007595)"
                     />
+                    <kbd>ENTER</kbd>
+                  </div>
+                  <button
+                    className="primary-button"
+                    onClick={() => runTrace()}
+                    disabled={!traceAccount || loading}
+                  >
+                    <Network size={16} /> TRACE BFS MONEY FLOW <ArrowRight size={15} />
+                  </button>
+                </div>
 
-                    {/* Spline Path */}
-                    <path
-                      d="M 20 145 C 50 120, 70 140, 100 125 C 130 110, 150 130, 180 115 C 210 100, 230 130, 260 110 C 290 90, 310 120, 340 100 C 370 80, 390 115, 420 105 C 450 95, 470 50, 500 45 C 530 40, 550 85, 580 95"
-                      fill="none"
-                      stroke="#10b981"
-                      strokeWidth="2.5"
-                    />
-
-                    {/* Dots */}
-                    {[
-                      { cx: 20, cy: 145 },
-                      { cx: 60, cy: 122 },
-                      { cx: 100, cy: 125 },
-                      { cx: 140, cy: 112 },
-                      { cx: 180, cy: 115 },
-                      { cx: 220, cy: 104 },
-                      { cx: 260, cy: 110 },
-                      { cx: 300, cy: 92 },
-                      { cx: 340, cy: 100 },
-                      { cx: 380, cy: 84 },
-                      { cx: 420, cy: 105 },
-                      { cx: 460, cy: 62 },
-                      { cx: 500, cy: 45 },
-                      { cx: 540, cy: 75 },
-                      { cx: 580, cy: 95 },
-                    ].map((pt, i) => (
-                      <circle key={i} cx={pt.cx} cy={pt.cy} r="3.5" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+                {suggestions.length > 0 && (
+                  <div className="suggestion-list">
+                    {suggestions.map((s) => (
+                      <button
+                        key={s.account}
+                        onClick={() => {
+                          setTraceAccount(s.account)
+                          setSuggestions([])
+                        }}
+                      >
+                        <span>{s.account}</span>
+                        <small>
+                          {money(s.total_inflow)} in · {s.unique_senders} senders
+                        </small>
+                      </button>
                     ))}
-                  </svg>
+                  </div>
+                )}
+
+                <div className="hero-foot">
+                  <span>
+                    <Zap size={13} /> 4-hop BFS target ≤ 2.0s
+                  </span>
+                  <span>
+                    <ShieldAlert size={13} /> Mule Risk Index 0–100
+                  </span>
+                  <span>
+                    <FileText size={13} /> Sec 172 & Sec 91 PDF Drafts
+                  </span>
                 </div>
               </div>
 
-              {/* INCIDENT CATEGORIES DONUT CHART */}
-              <div className="panel-surface chart-card">
-                <div className="chart-header">
+              <div className="hero-radar panel-surface">
+                <div className="radar-head">
+                  <span>SYSTEM TELEMETRY</span>
+                  <Gauge size={18} />
+                </div>
+                <div className="radar-ring">
+                  <div className="radar-core">
+                    <strong>{stats.loaded ? 'ONLINE' : 'WAIT'}</strong>
+                    <span>AIR-GAPPED CORE</span>
+                  </div>
+                </div>
+                <div className="health-list">
                   <div>
-                    <h3>Incident Categories</h3>
-                    <span>Distribution by vector</span>
+                    <span>Dataset Rows</span>
+                    <strong className="ok">{stats.loaded ? stats.rows?.toLocaleString() : '2,000,000'}</strong>
                   </div>
-                </div>
-
-                <div className="donut-chart-container">
-                  <div className="donut-visual">
-                    <svg viewBox="0 0 100 100" width="130" height="130">
-                      <circle cx="50" cy="50" r="38" fill="transparent" stroke="#f1f5f9" strokeWidth="14" />
-                      {/* Financial Fraud: 28% */}
-                      <circle cx="50" cy="50" r="38" fill="transparent" stroke="#065f46" strokeWidth="14" strokeDasharray="66.8 172.2" strokeDashoffset="0" />
-                      {/* Phishing: 22% */}
-                      <circle cx="50" cy="50" r="38" fill="transparent" stroke="#10b981" strokeWidth="14" strokeDasharray="52.5 186.5" strokeDashoffset="-66.8" />
-                      {/* Social Media: 18% */}
-                      <circle cx="50" cy="50" r="38" fill="transparent" stroke="#6ee7b7" strokeWidth="14" strokeDasharray="43 196" strokeDashoffset="-119.3" />
-                      {/* Malware: 12% */}
-                      <circle cx="50" cy="50" r="38" fill="transparent" stroke="#a7f3d0" strokeWidth="14" strokeDasharray="28.6 210.4" strokeDashoffset="-162.3" />
-                      {/* Identity Theft: 10% */}
-                      <circle cx="50" cy="50" r="38" fill="transparent" stroke="#cbd5e1" strokeWidth="14" strokeDasharray="23.9 215.1" strokeDashoffset="-190.9" />
-                    </svg>
-                    <div className="donut-center-label">
-                      <strong>248</strong>
-                      <span>Total</span>
-                    </div>
+                  <div>
+                    <span>Graph Traversal</span>
+                    <strong className="ok">Frontier BFS O(V+E)</strong>
                   </div>
-
-                  <div className="donut-legend">
-                    <div className="donut-legend-row">
-                      <div className="donut-legend-label">
-                        <span className="donut-dot" style={{ background: '#065f46' }} /> Financial Fraud
-                      </div>
-                      <span className="donut-legend-pct">28%</span>
-                    </div>
-                    <div className="donut-legend-row">
-                      <div className="donut-legend-label">
-                        <span className="donut-dot" style={{ background: '#10b981' }} /> Phishing
-                      </div>
-                      <span className="donut-legend-pct">22%</span>
-                    </div>
-                    <div className="donut-legend-row">
-                      <div className="donut-legend-label">
-                        <span className="donut-dot" style={{ background: '#6ee7b7' }} /> Social Media
-                      </div>
-                      <span className="donut-legend-pct">18%</span>
-                    </div>
-                    <div className="donut-legend-row">
-                      <div className="donut-legend-label">
-                        <span className="donut-dot" style={{ background: '#a7f3d0' }} /> Malware
-                      </div>
-                      <span className="donut-legend-pct">12%</span>
-                    </div>
-                    <div className="donut-legend-row">
-                      <div className="donut-legend-label">
-                        <span className="donut-dot" style={{ background: '#cbd5e1' }} /> Identity Theft
-                      </div>
-                      <span className="donut-legend-pct">10%</span>
-                    </div>
+                  <div>
+                    <span>Legal Section Alignment</span>
+                    <strong className="ok">CrPC & BNSS Compliant</strong>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* BOTTOM SPLIT ROW: RECENT INCIDENTS + QUICK ACTIONS */}
-            <div className="bottom-split-grid">
-              {/* RECENT INCIDENTS TABLE */}
-              <div className="panel-surface incidents-table-card">
-                <div className="table-header-row">
-                  <h3>Recent Incidents</h3>
-                  <button className="view-all-link" onClick={() => setPage('mules')}>
-                    View All <ArrowRight size={13} />
-                  </button>
-                </div>
-
-                <div className="clean-table-wrap">
-                  <table className="clean-table">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Type</th>
-                        <th>Description</th>
-                        <th>Status</th>
-                        <th>Time</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><strong>#INC-001</strong></td>
-                        <td>Phishing</td>
-                        <td>Fake bank login page detected</td>
-                        <td><span className="status-pill open">• Open</span></td>
-                        <td>2 Oct, 02:15 PM</td>
-                      </tr>
-                      <tr>
-                        <td><strong>#INC-002</strong></td>
-                        <td>Financial Fraud</td>
-                        <td>UPI fraud complaint (PYTM10007595)</td>
-                        <td><span className="status-pill progress">• In Progress</span></td>
-                        <td>2 Oct, 11:42 AM</td>
-                      </tr>
-                      <tr>
-                        <td><strong>#INC-003</strong></td>
-                        <td>Identity Theft</td>
-                        <td>Suspicious KYC activity</td>
-                        <td><span className="status-pill review">• Under Review</span></td>
-                        <td>2 Oct, 10:21 AM</td>
-                      </tr>
-                      <tr>
-                        <td><strong>#INC-004</strong></td>
-                        <td>Malware</td>
-                        <td>Malicious APK detected</td>
-                        <td><span className="status-pill resolved">• Resolved</span></td>
-                        <td>1 Oct, 06:30 PM</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* QUICK ACTIONS GRID */}
-              <div className="panel-surface quick-actions-card">
-                <h3>Quick Actions</h3>
-                <div className="quick-actions-grid">
-                  <button className="quick-action-tile" onClick={() => setPage('investigation')}>
-                    <div className="quick-action-icon">
-                      <Search size={18} />
-                    </div>
-                    <div className="quick-action-text">
-                      <strong>New Investigation</strong>
-                      <span>Create a new case</span>
-                    </div>
-                  </button>
-
-                  <button className="quick-action-tile" onClick={() => setPage('investigation')}>
-                    <div className="quick-action-icon">
-                      <Network size={18} />
-                    </div>
-                    <div className="quick-action-text">
-                      <strong>Run Link Analysis</strong>
-                      <span>Find connections</span>
-                    </div>
-                  </button>
-
-                  <button className="quick-action-tile" onClick={() => setPage('evidence')}>
-                    <div className="quick-action-icon">
-                      <FileCheck2 size={18} />
-                    </div>
-                    <div className="quick-action-text">
-                      <strong>Generate Report</strong>
-                      <span>Create detailed report</span>
-                    </div>
-                  </button>
-
-                  <button className="quick-action-tile" onClick={() => setPage('users')}>
-                    <div className="quick-action-icon">
-                      <Users size={18} />
-                    </div>
-                    <div className="quick-action-text">
-                      <strong>Manage Users</strong>
-                      <span>Control access & roles</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
+            <div className="metric-grid">
+              <Metric
+                icon={<Database size={16} />}
+                label="Transactions Indexed"
+                value={stats.loaded ? stats.rows!.toLocaleString() : '2,000,000'}
+                meta={stats.loaded ? 'indexed in 30.45s' : 'ready'}
+              />
+              <Metric
+                icon={<Fingerprint size={16} />}
+                label="Unique Accounts"
+                value={stats.loaded ? stats.accounts!.toLocaleString() : '24,873'}
+                meta="bank accounts universe"
+              />
+              <Metric
+                icon={<Target size={16} />}
+                label="Top Mule Risk"
+                value={mules.length ? `${mules[0].risk_score}/100` : '95/100'}
+                meta={mules[0] ? `${riskLabel(mules[0].risk_score)} threat` : 'active screen'}
+                accent
+              />
+              <Metric
+                icon={<Activity size={16} />}
+                label="Forensic Window"
+                value={
+                  stats.loaded
+                    ? `${stats.min_timestamp?.slice(5, 10)} → ${stats.max_timestamp?.slice(5, 10)}`
+                    : '15-Day Challenge'
+                }
+                meta="timestamp bounded"
+              />
             </div>
-          </>
+
+            <div className="dashboard-grid">
+              <section className="panel-surface panel-block">
+                <div className="section-head">
+                  <div>
+                    <span className="overline">PRIORITY MULE QUEUE</span>
+                    <h3>High-Risk Mule Accounts</h3>
+                  </div>
+                  <button className="ghost-button" onClick={() => setPage('mules')}>
+                    View all <ArrowRight size={14} />
+                  </button>
+                </div>
+                <div className="risk-table">
+                  {mules.slice(0, 7).map((m) => (
+                    <button
+                      className="risk-row"
+                      key={m.account}
+                      onClick={() => loadAccount(m.account)}
+                    >
+                      <span className="risk-rank">{mules.indexOf(m) + 1}</span>
+                      <span className="risk-account">
+                        <strong>{shortAccount(m.account)}</strong>
+                        <small>
+                          {m.signals.slice(0, 2).map((s) => s.name.replaceAll('_', ' ')).join(' · ') ||
+                            'Smurfing dispersion'}
+                        </small>
+                      </span>
+                      <span
+                        className={`risk-chip r${
+                          m.risk_score >= 75
+                            ? 'critical'
+                            : m.risk_score >= 50
+                            ? 'high'
+                            : m.risk_score >= 25
+                            ? 'watch'
+                            : 'low'
+                        }`}
+                      >
+                        {m.risk_score} • {riskLabel(m.risk_score)}
+                      </span>
+                      <ArrowRight size={15} />
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              <section className="panel-surface panel-block">
+                <div className="section-head">
+                  <div>
+                    <span className="overline">4-TIER TOPOLOGY</span>
+                    <h3>Money-Trail Pipeline</h3>
+                  </div>
+                  <Network size={19} className="muted-icon" />
+                </div>
+                <div className="flow-visual">
+                  <FlowNode label="VICTIM" detail="Origin Source" type="victim" />
+                  <ArrowRight />
+                  <FlowNode label="LAYER 1" detail="Collector Mule" type="l1" />
+                  <ArrowRight />
+                  <FlowNode label="LAYER 2" detail="Distributor Mule" type="l2" />
+                  <ArrowRight />
+                  <FlowNode label="LAYER 3" detail="Terminal Cash-Out" type="l3" />
+                </div>
+                <div className="flow-notes">
+                  <span>
+                    <span className="dot blue" /> Victim Source
+                  </span>
+                  <span>
+                    <span className="dot violet" /> Fan-in Collector
+                  </span>
+                  <span>
+                    <span className="dot orange" /> Fan-out 3-7 Splitting
+                  </span>
+                  <span>
+                    <span className="dot red" /> Terminal Gateway/Crypto
+                  </span>
+                </div>
+              </section>
+            </div>
+          </section>
         )}
 
-        {/* 4. INVESTIGATION & KNOWLEDGE GRAPH PAGE */}
-        {(page === 'investigation' || page === 'incidents') && (
+        {/* 2. INVESTIGATION WORKSPACE */}
+        {page === 'investigation' && (
           <section className="page-stack">
             <div className="workspace-toolbar panel-surface">
               <div className="toolbar-title">
-                <Network size={20} />
+                <Network size={18} />
                 <div>
                   <strong>BFS Money-Flow Graph Canvas</strong>
                   <span>
                     {inv
                       ? `${filteredNodes.length} visible nodes (${inv.node_count} total) · ${visibleEdges.length} transfers`
-                      : 'Enter a victim account in the top search bar to trace the 4-hop money flow'}
+                      : 'Awaiting victim query'}
                   </span>
                 </div>
               </div>
 
+              {/* Dynamic Filter Tabs */}
               {inv && (
                 <div className="graph-filter-tabs">
                   <button
                     className={`filter-tab ${filterMode === 'all' ? 'active' : ''}`}
                     onClick={() => setFilterMode('all')}
                   >
-                    All ({inv.nodes.length})
+                    All Nodes ({inv.nodes.length})
                   </button>
                   <button
                     className={`filter-tab ${filterMode === 'critical' ? 'active' : ''}`}
@@ -920,6 +695,7 @@ export default function App() {
                   className="ghost-button"
                   onClick={() => setShowFreezeModal(true)}
                   disabled={!inv}
+                  title="Preview Section 91 Bank Freeze Notice"
                 >
                   <Eye size={14} /> Notice Preview
                 </button>
@@ -941,12 +717,12 @@ export default function App() {
                 <div className="panel-heading">
                   <div>
                     <span className="overline">TRAIL TOPOLOGY</span>
-                    <h3>{inv ? `Victim Account: ${shortAccount(inv.victim_account)}` : 'No investigation loaded'}</h3>
+                    <h3>{inv ? `Victim ${shortAccount(inv.victim_account)}` : 'No investigation loaded'}</h3>
                   </div>
                   {inv && (
                     <div className="mini-stats">
                       <span>{money(totalTraced)} total traced</span>
-                      <span>{inv.elapsed_seconds.toFixed(3)}s BFS query</span>
+                      <span>{inv.elapsed_seconds.toFixed(3)}s BFS traversal</span>
                     </div>
                   )}
                 </div>
@@ -960,9 +736,9 @@ export default function App() {
                   />
                 ) : (
                   <div className="graph-empty">
-                    <Network size={34} color="#10b981" />
-                    <strong>Trace an investigation</strong>
-                    <span>Search any account ID (e.g. PYTM10007595) to reconstruct the multi-tier money trail.</span>
+                    <Network size={34} />
+                    <strong>Trace a victim account</strong>
+                    <span>Select a demo preset from Command Center to visualize the 4-hop money trail.</span>
                   </div>
                 )}
 
@@ -970,10 +746,10 @@ export default function App() {
                   <span className="isolation-chip">
                     {isolationId ? `ISOLATED • ${shortAccount(isolationId)}` : 'FULL 4-HOP TOPOLOGY'}
                   </span>
-                  <Legend color="#0ea5e9" label="Victim Source" />
-                  <Legend color="#8b5cf6" label="Layer 1 Collector" />
-                  <Legend color="#f59e0b" label="Layer 2 Distributor" />
-                  <Legend color="#ef4444" label="Layer 3 Terminal Cash-Out" />
+                  <Legend color="#00f5ff" label="Victim Source" />
+                  <Legend color="#8b9cff" label="Layer 1 Collector" />
+                  <Legend color="#ffaa00" label="Layer 2 Distributor" />
+                  <Legend color="#ff3b5c" label="Layer 3 Terminal / High Risk" />
                 </div>
               </section>
 
@@ -983,7 +759,7 @@ export default function App() {
                     <span className="overline">NODE FORENSICS</span>
                     <h3>{selectedNode ? shortAccount(selectedNode.account) : 'Select a node'}</h3>
                   </div>
-                  <Fingerprint size={17} color="#64748b" />
+                  <Fingerprint size={17} className="muted-icon" />
                 </div>
                 {selectedNode ? (
                   <NodeInspector
@@ -994,8 +770,8 @@ export default function App() {
                   />
                 ) : (
                   <div className="inspector-empty">
-                    <SlidersHorizontal size={26} color="#94a3b8" />
-                    <p>Click any node or transfer edge in the graph canvas to inspect explainable risk signals, pass-through velocity, and counterparty statistics.</p>
+                    <MousePointerIcon />
+                    <p>Click any node or edge in the graph canvas to inspect risk signals, pass-through velocity, and counterparty statistics.</p>
                   </div>
                 )}
               </aside>
@@ -1016,15 +792,16 @@ export default function App() {
           </section>
         )}
 
-        {/* 5. MULE RING INTELLIGENCE */}
-        {(page === 'mules' || page === 'analytics') && (
+        {/* 3. MULE RING INTELLIGENCE */}
+        {page === 'mules' && (
           <section className="page-stack">
             <div className="page-intro panel-surface">
               <div>
-                <h2>Mule Account Intelligence Leaderboard</h2>
+                <span className="overline">RISK DETECTION ENGINE</span>
+                <h2>Mule Account Leaderboard</h2>
                 <p>
-                  Screened using 5 explainable parameters: Pass-Through Velocity (≥90% in 3–15m), Fan-in (≥4 senders),
-                  Fan-out (3–7 split dispersal), Terminal Narration Markers, and Foreign Proxy / Script device fingerprints.
+                  Screened using 5 multi-parameter signals: High-Velocity Pass-Through (≥90% in 3–15m), Fan-in (≥4 senders),
+                  Fan-out (3–7 split dispersal), Terminal Narration Markers, and Suspicious IP/Device fingerprints.
                 </p>
               </div>
               <div className="intro-stat">
@@ -1033,125 +810,92 @@ export default function App() {
               </div>
             </div>
 
-            <div className="metrics-four-grid">
-              <div className="stat-metric-card">
-                <div>
-                  <div className="stat-icon-square red">
-                    <AlertTriangle size={20} />
-                  </div>
-                  <div className="stat-details">
-                    <span>Critical Risk (≥75)</span>
-                    <strong>{mules.filter((m) => m.risk_score >= 75).length}</strong>
-                    <div className="stat-trend">Immediate freeze action</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="stat-metric-card">
-                <div>
-                  <div className="stat-icon-square green">
-                    <Target size={20} />
-                  </div>
-                  <div className="stat-details">
-                    <span>High Risk (≥50)</span>
-                    <strong>{mules.filter((m) => m.risk_score >= 50).length}</strong>
-                    <div className="stat-trend">Distributor smurfing ring</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="stat-metric-card">
-                <div>
-                  <div className="stat-icon-square purple">
-                    <BarChart3 size={20} />
-                  </div>
-                  <div className="stat-details">
-                    <span>Active Signals</span>
-                    <strong>{mules.reduce((n, m) => n + m.signals.length, 0)}</strong>
-                    <div className="stat-trend">Heuristic trigger hits</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="stat-metric-card">
-                <div>
-                  <div className="stat-icon-square blue">
-                    <Zap size={20} />
-                  </div>
-                  <div className="stat-details">
-                    <span>Scoring Mode</span>
-                    <strong>VECTORIZED</strong>
-                    <div className="stat-trend">Sub-second batch scoring</div>
-                  </div>
-                </div>
-              </div>
+            <div className="metric-grid">
+              <Metric
+                icon={<ShieldAlert size={16} />}
+                label="Critical Risk (≥75)"
+                value={String(mules.filter((m) => m.risk_score >= 75).length)}
+                meta="immediate freeze"
+                accent
+              />
+              <Metric
+                icon={<Target size={16} />}
+                label="High Risk (≥50)"
+                value={String(mules.filter((m) => m.risk_score >= 50).length)}
+                meta="distributor ring"
+              />
+              <Metric
+                icon={<BarChart3 size={16} />}
+                label="Active Signals"
+                value={String(mules.reduce((n, m) => n + m.signals.length, 0))}
+                meta="heuristic hits"
+              />
+              <Metric
+                icon={<Zap size={16} />}
+                label="Scoring Mode"
+                value="VECTORIZED"
+                meta="sub-second batch scoring"
+              />
             </div>
 
             <section className="panel-surface table-section">
               <div className="section-head">
                 <div>
-                  <h3>Detected Suspect Mule Accounts</h3>
+                  <span className="overline">MULE RANKING</span>
+                  <h3>Detected Suspect Accounts</h3>
                 </div>
                 <button className="ghost-button" onClick={() => getTopMules(30).then(setMules)}>
                   Refresh List <Activity size={14} />
                 </button>
               </div>
-              <div className="clean-table-wrap">
-                <table className="clean-table">
-                  <thead>
-                    <tr>
-                      <th>Account Number</th>
-                      <th>Tier</th>
-                      <th>Risk Index & Formula</th>
-                      <th>Triggered Signals</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {mules.map((m) => (
-                      <tr key={m.account} onClick={() => loadAccount(m.account)} style={{ cursor: 'pointer' }}>
-                        <td>
-                          <strong>{m.account}</strong>
-                          <div style={{ fontSize: 9, color: '#64748b' }}>
-                            {money(m.stats?.total_inflow)} in · {money(m.stats?.total_outflow)} out
-                          </div>
-                        </td>
-                        <td><span className="mode-tag">Layer {m.layer || '1'}</span></td>
-                        <td>
-                          <strong style={{ color: m.risk_score >= 75 ? '#ef4444' : '#f59e0b', fontSize: 13 }}>
-                            {m.risk_score} / 100
-                          </strong>
-                          <div style={{ fontSize: 9, color: '#64748b' }}>{m.formula || riskLabel(m.risk_score)}</div>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                            {m.signals.slice(0, 3).map((s) => (
-                              <span key={s.name} className="status-pill review">
-                                {s.name.replaceAll('_', ' ')}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                        <td>
-                          <button className="ghost-button compact" onClick={() => runTrace(m.account)}>
-                            Trace Flow <ArrowRight size={12} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="mule-table">
+                <div className="mule-header">
+                  <span>ACCOUNT NUMBER</span>
+                  <span>TIER</span>
+                  <span>RISK INDEX</span>
+                  <span>TRIGGERED HEURISTIC SIGNALS</span>
+                  <span>ACTION</span>
+                </div>
+                {mules.map((m) => (
+                  <button className="mule-row" key={m.account} onClick={() => loadAccount(m.account)}>
+                    <span className="account-cell">
+                      <span className="account-avatar">
+                        <ShieldAlert size={14} />
+                      </span>
+                      <span>
+                        <strong>{m.account}</strong>
+                        <small>
+                          {money(m.stats?.total_inflow)} in · {money(m.stats?.total_outflow)} out
+                        </small>
+                      </span>
+                    </span>
+                    <span>
+                      <span className="layer-badge">L{m.layer || '1'}</span>
+                    </span>
+                    <span>
+                      <strong className="score-number">{m.risk_score}</strong>
+                      <small>{riskLabel(m.risk_score)}</small>
+                    </span>
+                    <span className="signal-list">
+                      {m.signals.slice(0, 3).map((s) => (
+                        <span key={s.name}>{s.name.replaceAll('_', ' ')}</span>
+                      ))}
+                    </span>
+                    <ArrowRight size={15} />
+                  </button>
+                ))}
               </div>
             </section>
           </section>
         )}
 
-        {/* 6. TEMPORAL ANALYSIS */}
+        {/* 4. TEMPORAL ANALYSIS */}
         {page === 'timeline' && (
           <section className="page-stack">
             <div className="page-intro panel-surface">
               <div>
-                <h2>Temporal Pass-Through Playback Timeline</h2>
+                <span className="overline">TEMPORAL PROPAGATION</span>
+                <h2>Smurfing Playback Timeline</h2>
                 <p>
                   Scrub through transaction history minute-by-minute to analyze pass-through velocities and rapid split transfers.
                 </p>
@@ -1159,53 +903,85 @@ export default function App() {
               {timeline.length > 0 && (
                 <div className="intro-stat">
                   <strong>{timeline.length}</strong>
-                  <span>transfers loaded</span>
+                  <span>transfers recorded</span>
                 </div>
               )}
             </div>
 
-            <section className="panel-surface chart-card">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Fingerprint size={18} color="#10b981" />
-                  <strong>{account || 'Select an account to scrub timeline'}</strong>
+            <section className="panel-surface timeline-panel">
+              <div className="timeline-toolbar">
+                <div className="timeline-account">
+                  <Fingerprint size={17} />
+                  <span>{account || 'No account selected'}</span>
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#059669' }}>
-                  {Math.min(timelineIndex, timeline.length)} / {timeline.length} Transactions
+                <input
+                  type="range"
+                  min="0"
+                  max={timeline.length || 0}
+                  value={Math.min(timelineIndex, timeline.length)}
+                  onChange={(e) => setTimelineIndex(Number(e.target.value))}
+                />
+                <div className="timeline-count">
+                  {Math.min(timelineIndex, timeline.length)} / {timeline.length}
                 </div>
+                <button className="ghost-button" onClick={() => setTimelineIndex(timeline.length)}>
+                  <Clock3 size={14} /> Show All
+                </button>
               </div>
 
-              <input
-                type="range"
-                min="0"
-                max={timeline.length || 0}
-                value={Math.min(timelineIndex, timeline.length)}
-                onChange={(e) => setTimelineIndex(Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#10b981' }}
-              />
-
-              {timeline.length > 0 && (
-                <div style={{ marginTop: 20 }}>
-                  <TransactionTable edges={visibleEdges.slice(0, 150)} />
+              {timeline.length ? (
+                <div className="timeline-track">
+                  <div className="track-line" />
+                  {timeline.slice(0, 20).map((e, i) => (
+                    <div
+                      className={`timeline-dot-item ${i < timelineIndex ? 'active' : ''}`}
+                      key={e.transaction_id}
+                      style={{
+                        left: `${
+                          timeline.length > 1
+                            ? (i / (Math.min(timeline.length, 20) - 1)) * 100
+                            : 0
+                        }%`,
+                      }}
+                    >
+                      <span className="timeline-dot" />
+                      <div className="timeline-card">
+                        <strong>{money(e.amount)}</strong>
+                        <small>
+                          {e.payment_mode} · {String(e.timestamp).slice(11, 19)}
+                        </small>
+                        <span>
+                          {shortAccount(e.sender_account)} → {shortAccount(e.receiver_account)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="graph-empty">
+                  <Clock3 size={32} />
+                  <strong>Select an account</strong>
+                  <span>Click any ranked mule or search an account to scrub its timeline.</span>
                 </div>
               )}
             </section>
           </section>
         )}
 
-        {/* 7. EVIDENCE & REPORTS */}
-        {(page === 'evidence' || page === 'osint' || page === 'users' || page === 'settings') && (
+        {/* 5. LEGAL EVIDENCE & PDF NOTICES */}
+        {page === 'evidence' && (
           <section className="page-stack">
             <div className="page-intro panel-surface">
               <div>
+                <span className="overline">STATUTORY ARTIFACTS</span>
                 <h2>Court-Ready Legal Documentation</h2>
                 <p>
                   Generate official Section 172 CrPC (Sec 192 BNSS) Police Case Diaries and Section 91 CrPC (Sec 94 BNSS) Bank Freeze Requisitions with 100% verified facts directly from DuckDB.
                 </p>
               </div>
               <div className="intro-stat">
-                <strong>{inv ? inv.investigation_id : 'Active'}</strong>
-                <span>Case Reference</span>
+                <strong>{inv ? inv.investigation_id : '—'}</strong>
+                <span>Active Case ID</span>
               </div>
             </div>
 
@@ -1236,12 +1012,12 @@ export default function App() {
                 </div>
                 <div>
                   <span className="overline">SECTION 91 CrPC / SEC 94 BNSS</span>
-                  <h3>Bank Account Freeze Notice</h3>
+                  <h3>Bank Account Freeze Requisition</h3>
                   <p>
-                    Formal statutory notice directed to Bank Nodal Officers commanding the immediate debit freeze of identified beneficiary mule accounts with exact IFSCs.
+                    Formal statutory notice directed to Bank Nodal Officers commanding the immediate lien/freeze of identified mule accounts with exact amounts and IFSC codes.
                   </p>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div className="report-btn-group">
                   <button
                     className="ghost-button"
                     disabled={!inv}
@@ -1289,13 +1065,13 @@ export default function App() {
       {/* STATUTORY FREEZE NOTICE PREVIEW MODAL */}
       {showFreezeModal && inv && (
         <div className="modal-backdrop" onClick={() => setShowFreezeModal(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-card panel-surface" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
                 <span className="overline">STATUTORY NOTICE UNDER SEC 91 CrPC / SEC 94 BNSS</span>
                 <h3>Bank Account Freeze Requisition Notice</h3>
               </div>
-              <button className="icon-circle-btn" onClick={() => setShowFreezeModal(false)}>
+              <button className="icon-button" onClick={() => setShowFreezeModal(false)}>
                 <X size={16} />
               </button>
             </div>
@@ -1304,13 +1080,17 @@ export default function App() {
               <div className="notice-banner">
                 <ShieldAlert size={18} />
                 <span>
-                  OFFICIAL DIRECTIVE: Immediate debit freeze and preservation of logs for identified cyber fraud beneficiary accounts.
+                  OFFICIAL COMMUNICATION: Directives for immediate debit block and preservation of logs for identified cyber fraud beneficiary accounts.
                 </span>
               </div>
 
               <div className="notice-text-preview">
-                <p><strong>TO:</strong> The Nodal Officer / Fraud Risk Management Cell</p>
-                <p><strong>CASE REFERENCE:</strong> Cyber Crime PS Indore / Abhedya-Chakra / Case #{inv.investigation_id}</p>
+                <p>
+                  <strong>TO:</strong> The Nodal Officer / Fraud Risk Management Cell
+                </p>
+                <p>
+                  <strong>CASE REFERENCE:</strong> Cyber Crime PS Indore / Abhedya-Chakra / Case #{inv.investigation_id}
+                </p>
                 <p>
                   <strong>SUBJECT:</strong> Urgent Requisition to Freeze Accounts under Section 91 of Code of Criminal Procedure, 1973 (read with Section 94 of Bharatiya Nagarik Suraksha Sanhita, 2023).
                 </p>
@@ -1320,7 +1100,7 @@ export default function App() {
                 </p>
 
                 <div className="notice-table-wrap">
-                  <table className="clean-table">
+                  <table>
                     <thead>
                       <tr>
                         <th>Account Number</th>
@@ -1336,11 +1116,15 @@ export default function App() {
                         .slice(0, 10)
                         .map((n) => (
                           <tr key={n.id}>
-                            <td><code>{n.account}</code></td>
-                            <td>{n.account.slice(0, 4)} Bank</td>
-                            <td><span className="mode-tag">L{n.layer}</span></td>
                             <td>
-                              <strong style={{ color: n.risk_score >= 75 ? '#ef4444' : '#f59e0b' }}>
+                              <code>{n.account}</code>
+                            </td>
+                            <td>{n.account.slice(0, 4)} Bank</td>
+                            <td>
+                              <span className="layer-badge">L{n.layer}</span>
+                            </td>
+                            <td>
+                              <strong style={{ color: n.risk_score >= 75 ? '#ff3b5c' : '#ffaa00' }}>
                                 {n.risk_score}
                               </strong>
                             </td>
@@ -1376,7 +1160,7 @@ export default function App() {
                   setShowFreezeModal(false)
                 }}
               >
-                <Download size={14} /> Download Signed PDF
+                <Download size={14} /> Download Official Signed PDF
               </button>
             </div>
           </div>
@@ -1386,10 +1170,42 @@ export default function App() {
   )
 }
 
+function Metric({
+  icon,
+  label,
+  value,
+  meta,
+  accent = false,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: string
+  meta: string
+  accent?: boolean
+}) {
+  return (
+    <div className={`metric-card ${accent ? 'accent' : ''}`}>
+      <div className="metric-icon">{icon}</div>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <small>{meta}</small>
+    </div>
+  )
+}
+
+function FlowNode({ label, detail, type }: { label: string; detail: string; type: string }) {
+  return (
+    <div className={`flow-node ${type}`}>
+      <strong>{label}</strong>
+      <span>{detail}</span>
+    </div>
+  )
+}
+
 function Legend({ color, label }: { color: string; label: string }) {
   return (
     <span className="legend-item">
-      <i style={{ background: color }} />
+      <i style={{ background: color, boxShadow: `0 0 8px ${color}80` }} />
       {label}
     </span>
   )
@@ -1414,11 +1230,20 @@ function NodeInspector({
           <strong>{node.risk_score} <span className="score-total">/ 100</span></strong>
           <small>{riskLabel(node.risk_score)} threat level</small>
         </div>
-        <div className="score-orbit">
-          <strong style={{ fontSize: 18, color: '#065f46' }}>{node.risk_score}</strong>
-        </div>
+        <div
+          className={`score-orbit risk-${
+            node.risk_score >= 75
+              ? 'critical'
+              : node.risk_score >= 50
+              ? 'high'
+              : node.risk_score >= 25
+              ? 'watch'
+              : 'low'
+          }`}
+        />
       </div>
 
+      {/* Additive Scoring Mathematical Equation */}
       <div className="formula-card">
         <div className="formula-header">
           <Calculator size={13} />
@@ -1449,6 +1274,7 @@ function NodeInspector({
         )}
       </div>
 
+      {/* Explainable Additive Rule Contributions */}
       <div className="breakdown-box">
         <span className="overline">FACTOR CONTRIBUTIONS (0–100 BREAKDOWN)</span>
         <div className="breakdown-list">
@@ -1465,7 +1291,7 @@ function NodeInspector({
               </div>
             ))
           ) : (
-            <div className="factor-detail">Originating victim account — baseline 0 risk points.</div>
+            <div className="no-signal">Originating victim account — baseline 0 risk points.</div>
           )}
         </div>
       </div>
@@ -1493,7 +1319,7 @@ function TransactionTable({ edges }: { edges: GraphEdge[] }) {
 
   return (
     <div className="data-table-wrap">
-      <table className="clean-table">
+      <table>
         <thead>
           <tr>
             <th>Txn Reference</th>
@@ -1523,6 +1349,14 @@ function TransactionTable({ edges }: { edges: GraphEdge[] }) {
           ))}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+function MousePointerIcon() {
+  return (
+    <div className="inspector-placeholder-icon">
+      <SlidersHorizontal size={22} />
     </div>
   )
 }

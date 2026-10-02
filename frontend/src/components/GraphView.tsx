@@ -14,11 +14,11 @@ import {
 import type { GraphEdge, GraphNode } from '../types/investigation'
 
 function nodeColor(layer: number, risk: number, hop: number) {
-  if (hop === 0) return '#0ea5e9' // Sky Blue for victim
-  if (layer === 3 || risk >= 75) return '#ef4444' // Critical Red
-  if (layer === 2 || risk >= 50) return '#f59e0b' // Amber Orange
-  if (layer === 1 || risk >= 25) return '#8b5cf6' // Purple
-  return '#10b981' // Emerald Green
+  if (hop === 0) return '#00f5ff' // Cyan for victim
+  if (layer === 3 || risk >= 75) return '#ff3b5c' // Critical Neon Red
+  if (layer === 2 || risk >= 50) return '#ffaa00' // Amber Orange
+  if (layer === 1 || risk >= 25) return '#8b9cff' // Electric Purple-Blue
+  return '#64748b' // Slate
 }
 
 export type LayoutType = 'cose' | 'breadthfirst' | 'concentric' | 'circle'
@@ -61,18 +61,14 @@ export default function GraphView({
             width: 44,
             height: 44,
             label: 'data(label)',
-            color: '#0f172a',
-            'font-size': '9px',
+            color: '#e2e8f0',
+            'font-size': '8px',
             'font-weight': 700,
             'text-wrap': 'wrap',
             'text-valign': 'bottom',
             'text-margin-y': 5,
-            'border-width': 3,
-            'border-color': '#ffffff',
-            'text-background-color': 'rgba(255, 255, 255, 0.95)',
-            'text-background-opacity': 1,
-            'text-background-padding': '3px',
-            'text-background-shape': 'roundrectangle',
+            'border-width': 2,
+            'border-color': '#090d16',
             'overlay-opacity': 0,
             'transition-property': 'background-color, border-width, border-color, opacity',
             'transition-duration': 200,
@@ -82,47 +78,45 @@ export default function GraphView({
           selector: 'node:selected',
           style: {
             'border-width': 4,
-            'border-color': '#10b981',
+            'border-color': '#00f5ff',
             'border-opacity': 1,
-            'underlay-color': '#10b981',
-            'underlay-padding': 6,
-            'underlay-opacity': 0.25,
+            'underlay-color': '#00f5ff',
+            'underlay-padding': 4,
+            'underlay-opacity': 0.35,
           },
         },
         {
           selector: 'node.highlighted',
           style: {
             'border-width': 4,
-            'border-color': '#059669',
+            'border-color': '#38bdf8',
             'border-opacity': 1,
-            'underlay-color': '#10b981',
-            'underlay-padding': 6,
-            'underlay-opacity': 0.3,
+            'underlay-color': '#38bdf8',
+            'underlay-padding': 4,
+            'underlay-opacity': 0.45,
           },
         },
         {
           selector: 'node.dimmed',
           style: {
-            opacity: 0.2,
+            opacity: 0.18,
           },
         },
         {
           selector: 'edge',
           style: {
             width: 2,
-            'line-color': '#94a3b8',
-            'target-arrow-color': '#64748b',
+            'line-color': '#334155',
+            'target-arrow-color': '#475569',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
             'arrow-scale': 0.8,
             label: 'data(label)',
-            color: '#475569',
-            'font-size': '8px',
-            'font-weight': 600,
-            'text-background-color': '#ffffff',
-            'text-background-opacity': 0.95,
+            color: '#94a3b8',
+            'font-size': '7px',
+            'text-background-color': '#070b14',
+            'text-background-opacity': 0.92,
             'text-background-padding': '2px',
-            'text-background-shape': 'roundrectangle',
             'transition-property': 'line-color, target-arrow-color, width, opacity',
             'transition-duration': 200,
           },
@@ -131,16 +125,16 @@ export default function GraphView({
           selector: 'edge.highlighted',
           style: {
             width: 3.5,
-            'line-color': '#10b981',
-            'target-arrow-color': '#10b981',
-            color: '#059669',
+            'line-color': '#00f5ff',
+            'target-arrow-color': '#00f5ff',
+            color: '#00f5ff',
             'z-index': 99,
           },
         },
         {
           selector: 'edge.dimmed',
           style: {
-            opacity: 0.15,
+            opacity: 0.12,
           },
         },
       ],
@@ -228,6 +222,7 @@ export default function GraphView({
     }
   }, [selectedId])
 
+  // Apply layout helper
   const applyLayout = (name: LayoutType) => {
     const cy = cyRef.current
     if (!cy) return
