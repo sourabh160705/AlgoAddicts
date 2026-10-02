@@ -450,9 +450,6 @@ export default function App() {
             </h1>
           </div>
           <div className="topbar-actions">
-            <div className="topbar-status">
-              <span className="pulse-dot" /> Algorithm: <strong>BFS Frontier</strong>
-            </div>
             <button className="icon-button" title="System Notifications">
               <Bell size={17} />
             </button>
