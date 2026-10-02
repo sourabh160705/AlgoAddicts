@@ -32,6 +32,9 @@ import {
   Target,
   X,
   Zap,
+  AlertCircle,
+  Bot,
+  Scale,
 } from 'lucide-react'
 import GraphView from './components/GraphView'
 import {
@@ -776,6 +779,91 @@ export default function App() {
                 )}
               </aside>
             </div>
+
+            {inv && inv.narrative && (
+              <section className="panel-surface ai-narrative-section">
+                <div className="section-head">
+                  <div className="narrative-header-title">
+                    <div className="ai-badge">
+                      <Sparkles size={13} />
+                      <span>AI INVESTIGATION BRIEF</span>
+                    </div>
+                    <h3>Officer Executive Summary & Case Narrative</h3>
+                    <span className="narrative-subtitle">Court-ready Section 172 CrPC & Section 192 BNSS Forensic Log</span>
+                  </div>
+                  <div className="narrative-header-actions">
+                    <button
+                      className="ghost-button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(inv.narrative?.narrative_text || '')
+                        setToast('Case Brief copied to clipboard!')
+                      }}
+                      title="Copy narrative text to clipboard"
+                    >
+                      <Copy size={13} /> Copy to Case Diary
+                    </button>
+                    <button
+                      className="primary-button compact"
+                      onClick={() => setShowFreezeModal(true)}
+                    >
+                      <FileText size={13} /> Draft Section 91 Notice
+                    </button>
+                  </div>
+                </div>
+
+                <div className="narrative-body-grid">
+                  <div className="narrative-text-card">
+                    <div className="narrative-paragraphs">
+                      {inv.narrative.narrative_text.split('\n\n').map((paragraph, idx) => (
+                        <p key={idx} className="narrative-p">{paragraph}</p>
+                      ))}
+                    </div>
+                    <div className="narrative-meta-row">
+                      <span>⚡ Velocity Window: <strong>{inv.narrative.duration_str}</strong></span>
+                      <span>🚨 Primary Suspect: <strong>{inv.narrative.top_mule_account || 'N/A'}</strong> ({inv.narrative.top_mule_risk}/100 Risk)</span>
+                      <span>🛡️ Traversed Topology: <strong>{inv.narrative.hop_count} Hops ({inv.narrative.total_nodes} Nodes)</strong></span>
+                    </div>
+                  </div>
+
+                  <div className="narrative-side-column">
+                    {/* Red Flags Card */}
+                    <div className="narrative-red-flags-card">
+                      <div className="card-micro-head">
+                        <AlertCircle size={14} color="#dc2626" />
+                        <strong>Forensic Red Flags</strong>
+                      </div>
+                      <div className="red-flag-pills">
+                        {inv.narrative.red_flags.map((flag, idx) => (
+                          <div key={idx} className="red-flag-pill">
+                            <span>{flag}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Recommended Statutory Actions Card */}
+                    <div className="narrative-actions-card">
+                      <div className="card-micro-head">
+                        <Scale size={14} color="#059669" />
+                        <strong>Recommended Statutory Actions</strong>
+                      </div>
+                      <div className="statutory-list">
+                        {inv.narrative.recommendations.map((rec, idx) => (
+                          <div key={idx} className="statutory-item">
+                            <div className="statutory-item-head">
+                              <span className="statute-badge">{rec.statute}</span>
+                              <span className="urgency-tag">{rec.urgency}</span>
+                            </div>
+                            <strong className="statute-action">{rec.action}</strong>
+                            <small className="statute-target">Target: {rec.target}</small>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
 
             {inv && (
               <section className="panel-surface table-section">

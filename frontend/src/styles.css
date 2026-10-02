@@ -2325,3 +2325,209 @@ button {
   margin-top: 4px;
   line-height: 1.4;
 }
+
+/* ==========================================================================
+   AI CASE NARRATIVE & OFFICER EXECUTIVE BRIEF
+   ========================================================================== */
+.ai-narrative-section {
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.05);
+}
+
+.narrative-header-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #d1f4e4;
+  color: #065f46;
+  border: 1px solid #a7e7cb;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  width: max-content;
+  margin-bottom: 2px;
+}
+
+.narrative-subtitle {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.narrative-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.narrative-body-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.narrative-text-card {
+  background: #f8fdfa;
+  border: 1px solid #d1ebde;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.narrative-p {
+  font-size: 13px;
+  line-height: 1.75;
+  color: #1e293b;
+  margin: 0 0 12px;
+}
+
+.narrative-p:last-child {
+  margin-bottom: 0;
+}
+
+.narrative-p code {
+  color: #059669;
+  background: #d1f4e4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.narrative-meta-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2f1ea;
+  font-size: 11px;
+  color: #475569;
+}
+
+.narrative-meta-row span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.narrative-meta-row strong {
+  color: #0f172a;
+}
+
+.narrative-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card-micro-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #0f172a;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.narrative-red-flags-card {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.red-flag-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.red-flag-pill {
+  background: #ffffff;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #991b1b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.narrative-actions-card {
+  background: #f0faf5;
+  border: 1px solid #a7e7cb;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.statutory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statutory-item {
+  background: #ffffff;
+  border: 1px solid #d1ebde;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statutory-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statute-badge {
+  font-size: 9px;
+  font-weight: 800;
+  color: #065f46;
+  background: #d1f4e4;
+  border: 1px solid #a7e7cb;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.urgency-tag {
+  font-size: 8px;
+  font-weight: 700;
+  color: #dc2626;
+  text-transform: uppercase;
+}
+
+.statute-action {
+  font-size: 11px;
+  color: #0f172a;
+}
+
+.statute-target {
+  font-size: 10px;
+  color: #64748b;
+}
+
+@media (max-width: 1100px) {
+  .narrative-body-grid {
+    grid-template-columns: 1fr;
+  }
+}

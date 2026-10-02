@@ -9,6 +9,7 @@ from backend.graph.trace import trace_money_flow
 from backend.evidence.builder import build_evidence
 from backend.reports.pdf_reports import make_case_diary, make_freeze_requisition
 from backend.analytics.risk import analyze_account, analyze_accounts_batch
+from backend.analytics.narrative import generate_case_narrative
 
 router = APIRouter(prefix="/api")
 INVESTIGATIONS: dict[str, dict] = {}
@@ -66,9 +67,22 @@ def trace(req: TraceRequest):
     elapsed = time.perf_counter() - start
     iid = uuid.uuid4().hex[:12]
     evidence = build_evidence(result)
-    payload = {**result, "elapsed_seconds": round(elapsed, 4), "evidence": evidence}
+    narrative = generate_case_narrative({**result, "investigation_id": iid}, evidence)
+    payload = {
+        **result,
+        "elapsed_seconds": round(elapsed, 4),
+        "evidence": evidence,
+        "narrative": narrative
+    }
     INVESTIGATIONS[iid] = payload
     return {"investigation_id": iid, **payload}
+
+@router.get("/investigation/{investigation_id}/narrative")
+def investigation_narrative(investigation_id: str):
+    r = INVESTIGATIONS.get(investigation_id)
+    if not r:
+        raise HTTPException(404, "Investigation not found")
+    return r.get("narrative") or generate_case_narrative({**r, "investigation_id": investigation_id}, r.get("evidence"))
 
 @router.get("/investigation/{investigation_id}")
 def get_investigation(investigation_id: str):

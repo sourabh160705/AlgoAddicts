@@ -52,6 +52,28 @@ export interface Evidence {
   source: string
 }
 
+export interface CaseNarrative {
+  victim_account: string
+  narrative_text: string
+  executive_summary: string
+  duration_str: string
+  total_defrauded: number
+  total_terminal_cashout: number
+  top_mule_account?: string
+  top_mule_risk?: number
+  hop_count: number
+  total_nodes: number
+  total_edges: number
+  red_flags: string[]
+  recommendations: Array<{
+    statute: string
+    action: string
+    target: string
+    urgency: string
+  }>
+  generated_at: string
+}
+
 export interface Investigation {
   investigation_id: string
   victim_account: string
@@ -62,6 +84,7 @@ export interface Investigation {
   nodes: GraphNode[]
   edges: GraphEdge[]
   evidence?: Evidence
+  narrative?: CaseNarrative
 }
 
 export interface Stats {
