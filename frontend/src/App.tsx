@@ -55,7 +55,7 @@ import {
 import type { AccountSummary, GraphEdge, GraphNode, Investigation, MuleAccount, Stats } from './types/investigation'
 import './styles.css'
 
-export interface PitchScenario {
+interface PitchScenario {
   id: string
   title: string
   subtitle: string
@@ -66,7 +66,7 @@ export interface PitchScenario {
   highlights: string[]
 }
 
-export const PITCH_SCENARIOS: PitchScenario[] = [
+const PITCH_SCENARIOS: PitchScenario[] = [
   {
     id: 'velocity-cashout',
     title: 'High-Velocity 4-Hop ATM Cash-Out Ring',

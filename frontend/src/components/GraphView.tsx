@@ -36,6 +36,7 @@ export default function GraphView({
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const cyRef = useRef<Core | null>(null)
+  const layoutRef = useRef<any>(null)
   const onSelectRef = useRef(onSelect)
   const nodesRef = useRef(nodes)
   
@@ -139,7 +140,7 @@ export default function GraphView({
           },
         },
       ],
-      wheelSensitivity: 0.35,
+      wheelSensitivity: 0.2,
     })
 
     cy.on('tap', 'node', (event) => {
@@ -157,7 +158,10 @@ export default function GraphView({
     cyRef.current = cy
 
     return () => {
-      cy.destroy()
+      if (layoutRef.current) {
+        try { layoutRef.current.stop() } catch {}
+      }
+      try { cy.destroy() } catch {}
       cyRef.current = null
     }
   }, [])
@@ -228,10 +232,14 @@ export default function GraphView({
     const cy = cyRef.current
     if (!cy) return
 
+    if (layoutRef.current) {
+      try { layoutRef.current.stop() } catch {}
+    }
+
     const layoutConfig: any = {
       name,
       animate: true,
-      animationDuration: 400,
+      animationDuration: 350,
       padding: 45,
     }
 
@@ -247,7 +255,9 @@ export default function GraphView({
       layoutConfig.nodeRepulsion = 450000
     }
 
-    cy.layout(layoutConfig).run()
+    const layout = cy.layout(layoutConfig)
+    layoutRef.current = layout
+    layout.run()
   }
 
   const handleLayoutChange = (newLayout: LayoutType) => {
