@@ -2531,3 +2531,221 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   HACKATHON PITCH & EVALUATION SUITE
+   ========================================================================== */
+.pitch-scenarios-section {
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.05);
+}
+
+.pitch-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.pitch-card {
+  background: #f8fdfa;
+  border: 1px solid #d1ebde;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.pitch-card:hover {
+  transform: translateY(-2px);
+  border-color: #10b981;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.12);
+}
+
+.pitch-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.pitch-tag {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+
+.pitch-acc-code {
+  font-size: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #64748b;
+  background: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #d1ebde;
+}
+
+.pitch-card h4 {
+  font-size: 14px;
+  color: #0f172a;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+
+.pitch-card p {
+  font-size: 11px;
+  line-height: 1.55;
+  color: #475569;
+  margin: 0 0 12px;
+}
+
+.pitch-highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 16px;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid #e2f1ea;
+  border-radius: 9px;
+}
+
+.pitch-highlights span {
+  font-size: 10px;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.pitch-launch-btn {
+  width: 100%;
+}
+
+/* Pitch Tour Banner (Active on Investigation) */
+.pitch-tour-banner {
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #f0faf5 0%, #ffffff 100%);
+  border: 1px solid #a7e7cb;
+  border-radius: 16px;
+  box-shadow: 0 6px 25px rgba(16, 185, 129, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pitch-tour-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pitch-tour-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pitch-tour-title strong {
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.pitch-tour-target {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.pitch-tour-target code {
+  color: #059669;
+  background: #d1f4e4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.pitch-tour-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pitch-step-pills {
+  display: flex;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #d1ebde;
+  padding: 3px;
+  border-radius: 10px;
+}
+
+.pitch-step-pill {
+  border: 0;
+  background: transparent;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  transition: all 0.15s ease;
+}
+
+.pitch-step-pill:hover {
+  color: #0f172a;
+}
+
+.pitch-step-pill.active {
+  background: #059669;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
+}
+
+.pitch-step-box {
+  background: #ffffff;
+  border: 1px solid #d1ebde;
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.pitch-step-badge {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #059669;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.pitch-step-box p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #334155;
+  margin: 0;
+}
+
+.pitch-step-box code {
+  color: #059669;
+  background: #f0faf5;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+  .pitch-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
